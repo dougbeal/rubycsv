@@ -24,8 +24,8 @@ class CSVRow
 
     def initialize(row)
         @csvrow = Hash.new
-        index = 0 
-        $header_row.size.times do 
+        index = 0
+        $header_row.size.times do
             @csvrow[$header_row[index]] = row[index]
             index +=1;
         end
@@ -68,8 +68,8 @@ def clean_text(text) # get rid of anything that's not a word or space, make mult
     return text.gsub(/[^\w \]\[\@\.\,\'\"]/,'').gsub(/[ ]+/,' ').strip;
 end
 
-# lookup values in arrays.  Table is a 2D array, 
-# where the first value is the string returned, 
+# lookup values in arrays.  Table is a 2D array,
+# where the first value is the string returned,
 # and the following are substrings to attempt to match against the value
 
 def tablematch(table, value)
