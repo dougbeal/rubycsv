@@ -4,6 +4,8 @@ require 'csv'
 require 'erb'
 require 'date'
 
+require 'pry'
+
 # globals
 $template_file = ARGV[0]
 $csv_filename = ARGV[1]
@@ -11,8 +13,10 @@ $template_text = ""
 $header_row = []
 
 # evaluate the template in order to get the templates and other variables out
-eval(File.read($template_file))
+$erb_template = File.read($template_file)
+
 $template_text = $erb_template
+
 
 # class to bind hash into erb template
 class CSVRow
@@ -39,7 +43,7 @@ end
 
 
 
-def clean_money(text_money, positive = FALSE) # nuke all but digits, negation, decimal place
+def clean_money(text_money, positive = false) # nuke all but digits, negation, decimal place
     if text_money.nil?
         return ""
     end
@@ -96,7 +100,7 @@ csv.each() do |row|
     else
         thisrow = CSVRow.new(row)
         #print "line: #{thisrow.csvrow.inspect}\n"
-        erbrender = ERB.new($erb_template, nil, '<>')
+        erbrender = ERB.new($erb_template, safe_mode=nil, trim_mode='-<>')
         puts erbrender.result(thisrow.get_binding)
     end
 end

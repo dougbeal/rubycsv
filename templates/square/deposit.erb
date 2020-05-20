@@ -1,0 +1,32 @@
+<%# Deposit Date,Payment Date,Type,Transaction ID,Payment ID,Collected,Fees,Deposited,Deposit ID,Location -%>
+<%# Date and transaction -%>
+<% @dollar_format = '     %-25s %10s' -%>
+<% @transaction = ['Type', 'Transaction ID', 'Payment ID', 'Deposit ID'] -%>
+<% @tags = {
+    'transaction' => 'Transaction ID',
+    'payment' => 'Payment ID',
+    'desposit' => 'Deposit ID',
+    'loc' => 'Location'
+} -%>
+<% @val = {
+    'Income:Square:Collected' => 'Collected',
+    'Expenses:Fees:Square' => 'Fees',
+    'Assets:Square' => 'Deposited',
+} -%>
+<% @type = csvrow['Type'] -%>
+<% @credit = true -%>
+<% if @type.eql?('Refund') -%>
+    <% @credit = false -%>
+<% end -%>
+<%= clean_date(csvrow['Deposit Date'], "%m/%d/%y")
+%> <%= @transaction.map{ |c| csvrow[c] }.select{ |c| not c.strip.empty? }.join(', ') %> 
+<%# tags -%>
+<% @tags.each do |name, column|
+%><% if csvrow[column]
+  %>     ; <%= "%s: %s" % [ name, csvrow[column] ] %>
+<% end -%><% end -%>
+<%# values -%>
+<% @val.each do |name, column|
+%><%= @dollar_format % [name, "$" + clean_money(csvrow[column])] %>
+<% end -%>
+
