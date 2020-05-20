@@ -1,6 +1,5 @@
 <%# Deposit Date,Payment Date,Type,Transaction ID,Payment ID,Collected,Fees,Deposited,Deposit ID,Location -%>
 <%# Date and transaction -%>
-<% @dollar_format = '     %-25s %10s' -%>
 <% @transaction = ['Type', 'Transaction ID', 'Payment ID', 'Deposit ID'] -%>
 <% @tags = {
     'transaction' => 'Transaction ID',
@@ -8,25 +7,20 @@
     'desposit' => 'Deposit ID',
     'loc' => 'Location'
 } -%>
-<% @val = {
-    'Income:Square:Collected' => 'Collected',
-    'Expenses:Fees:Square' => 'Fees',
-    'Assets:Square' => 'Deposited',
+<% @line = {
+    'Assets:Square:Sale' => { :column => 'Collected', :invert => true },
+    'Expenses:Fees:Square' => { :column => 'Fees', :invert => true },
+    'Transfer' => { :column => 'Deposited', :invert => false },
 } -%>
-<% @type = csvrow['Type'] -%>
-<% @credit = true -%>
-<% if @type.eql?('Refund') -%>
-    <% @credit = false -%>
-<% end -%>
 <%= clean_date(csvrow['Deposit Date'], "%m/%d/%y")
-%> <%= @transaction.map{ |c| csvrow[c] }.select{ |c| not c.strip.empty? }.join(', ') %> 
+%> <%= "Square " + @transaction.map{ |c| csvrow[c] }.select{ |c| not c.strip.empty? }.join(', ') %> 
 <%# tags -%>
 <% @tags.each do |name, column|
 %><% if csvrow[column]
-  %>     ; <%= "%s: %s" % [ name, csvrow[column] ] %>
+  %><%= @ledger_indent + "; %s: %s" % [ name, csvrow[column] ] %>
 <% end -%><% end -%>
 <%# values -%>
-<% @val.each do |name, column|
-%><%= @dollar_format % [name, "$" + clean_money(csvrow[column])] %>
+<% @line.each do |name, v|
+%><%= @ledger_transaction % [name, "$" + clean_money(csvrow[v[:column]], invert:v[:invert])] %>
 <% end -%>
 

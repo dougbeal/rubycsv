@@ -36,6 +36,15 @@ class CSVRow
     end
 end
 
+class LedgerFormatCSVRow < CSVRow
+    def initialize(row)
+        super(row)
+        @ledger_indent = ' '*4
+        @ledger_transaction = @ledger_indent + '%-23s  %23s'
+    end
+end
+
+
 # helper functions
 def clean_date(text_date, date_format="%Y-%m-%d") # reformat date in to big endian format
     return Date.strptime(text_date,date_format).strftime("%Y-%m-%d")
@@ -43,12 +52,21 @@ end
 
 
 
-def clean_money(text_money, positive = false) # nuke all but digits, negation, decimal place
+def clean_money(text_money, positive: false, invert: false) # nuke all but digits, negation, decimal place
     if text_money.nil?
         return ""
     end
+
     if positive
         return text_money.gsub(/[^\d\.]/,'')
+    elsif invert
+        #num = text_money.gsub(/[^\d\.]/,'')
+        num = text_money.gsub(/[^-\d\.]/,'')
+        if num.start_with?('-')
+            return num[1..]
+        else
+            return "-" + num
+        end
     else
         return text_money.gsub(/[^-\d\.]/,'')
     end
@@ -98,7 +116,7 @@ csv.each() do |row|
     if(csv.lineno == 1) #this is the header row, store to assign as keys on later rows, stripping whitespace
         $header_row = row.collect{|val| val.to_s.strip}
     else
-        thisrow = CSVRow.new(row)
+        thisrow = LedgerFormatCSVRow.new(row)
         #print "line: #{thisrow.csvrow.inspect}\n"
         erbrender = ERB.new($erb_template, safe_mode=nil, trim_mode='-<>')
         puts erbrender.result(thisrow.get_binding)
@@ -106,3 +124,6 @@ csv.each() do |row|
 end
 
 
+# Local Variables:
+# ruby-indent-level: 4
+# End:

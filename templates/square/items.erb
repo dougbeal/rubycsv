@@ -1,12 +1,11 @@
 <%# Date,Time,Time Zone,Gross Sales,Discounts,Net Sales,Gift Card Sales,Tax,Tip,Partial Refunds,Total Collected,Source,Card,Card Entry Methods,Cash,Square Gift Card,Other Tender,Other Tender Type,Other Tender Note,Fees,Net Total,Transaction ID,Payment ID,Card Brand,PAN Suffix,Device Name,Staff Name,Staff ID,Details,Description,Event Type,Location,Dining Option,Customer ID,Customer Name,Customer Reference ID,Device Nickname,Deposit ID,Deposit Date,Deposit Details,Fee Percentage Rate,Fee Fixed Rate,Re,fund Reason,Discount Name,Transaction Status -%>
 
 <%# Date and transaction -%>
-<% @dollar_format = '     %-25s %10s' -%>
 <% @virtuals = ['Gross Sales', 'Discounts'] -%>
 <% @item = ['SKU', 'Item', 'Price Point Name'] -%>
 <% @cust = ['Customer Name', 'Customer ID'] -%>
 <%= clean_date(csvrow['Date'], "%m/%d/%y")
-%> <%= @item.map{ |c| csvrow[c] }.select{ |c| not c.strip.empty? }.join(', ') %> by <%= @cust.map{ |c| csvrow[c] }.join(', ') %> as <%= csvrow['Transaction ID']  %>
+%> Item <%= @item.map{ |c| csvrow[c] }.select{ |c| not c.strip.empty? }.join(', ') %> by <%= @cust.map{ |c| csvrow[c] }.join(', ') %> as <%= csvrow['Transaction ID']  %>
 <%# -%>
 <%# tags -%>
 <% {'syncid' => 'Transaction ID',
@@ -15,21 +14,21 @@
     'sub' => 'Price Point Name',
     'sku' => 'SKU', }.each do |name, column|
 %><% if csvrow[column]
-  %>     ; <%= "%s: %s" % [ name, csvrow[column] ] %>
+  %><%= @ledger_indent + "; %s: %s" % [ name, csvrow[column] ] %>
 <% end -%><% end -%>
 <%# -%>
 <%# Notes if non-empty -%>
 <% if not csvrow['Notes'].strip.empty?
-%>     ; <%= "Notes: %s" % csvrow['Notes'].gsub("\n","")%>
+%><%= @ledger_indent + "; Notes: %s" % csvrow['Notes'].gsub("\n","")%>
 <% end  -%>
 <%# -%>
 <%# virtual values, included for informational purposes -%>
 <% for @virtual in @virtuals
-%><%= @dollar_format % ["(" + @virtual + ")", "$" + clean_money(csvrow[@virtual])] %>
+%><%= @ledger_transaction % ["(" + @virtual + ")", "$" + clean_money(csvrow[@virtual])] %>
 <% end -%>
 <%# -%>
 <% for @income in ['Tax', 'Net Sales']
-%><%= @dollar_format % ["Income:Square:" + @income + "", "$" + clean_money(csvrow[@income])] %>
+%><%= @ledger_transaction % ["Income:Square:" + @income + "", "$" + clean_money(csvrow[@income], invert: true)] + '; ' + csvrow[@income] %>
 <% end -%>
 <%# -%>
-<%= @dollar_format % ["Income:Square:Collected", ""] %>
+<%= @ledger_transaction % ["Assets:Square:Sale", ""] %>
