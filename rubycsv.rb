@@ -110,7 +110,7 @@ end
 
 # parse CSV file
 
-csv = CSV.open($csv_filename,'r')
+csv = CSV.open($csv_filename,'r', liberal_parsing: true)
 
 csv.each() do |row|
     if(csv.lineno == 1) #this is the header row, store to assign as keys on later rows, stripping whitespace
