@@ -1,0 +1,27 @@
+<%# "payout_id","effective_at_utc","effective_at","currency","gross","fee","net","reporting_category","balance_transaction_id","description","payout_expected_arrival_date","payout_status","payout_reversed_at_utc","payout_reversed_at","payout_type","payout_description","payout_destination_id" -%>
+<%# Date and transaction -%>
+<% @transaction = ['payout_id', 'balance_transaction_id', 'payout_destination_id'] -%>
+<% @tags = {
+    "payout_id" => "payout_id", 
+    "balance_transaction_id" => "balance_transaction_id",
+    "description" => "description",
+    "payout_destination_id" => "payout_destination_id"
+
+} -%>
+<% @line = {
+    'Assets:Stripe:Sale' => { :column => 'gross', :invert => true },
+    'Expenses:Fees:Stripe' => { :column => 'fee', :invert => true },
+    'Transfer' => { :column => 'net', :invert => false },
+} -%>
+<%= clean_date_time(csvrow['effective_at'] )
+%> <%= "Stripe " + @transaction.map{ |c| csvrow[c] }.select{ |c| not c.strip.empty? }.join(', ') %> 
+<%# tags -%>
+<% @tags.each do |name, column|
+%><% if csvrow[column]
+  %><%= @ledger_indent + "; %s: %s" % [ name, csvrow[column] ] %>
+<% end -%><% end -%>
+<%# values -%>
+<% @line.each do |name, v|
+%><%= @ledger_transaction % [name, "$" + clean_money(csvrow[v[:column]], invert:v[:invert])] %>
+<% end -%>
+

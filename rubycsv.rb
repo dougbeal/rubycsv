@@ -4,7 +4,7 @@ require 'csv'
 require 'erb'
 require 'date'
 
-require 'pry'
+#require 'pry'
 
 # globals
 $template_file = ARGV[0]
@@ -41,6 +41,7 @@ class LedgerFormatCSVRow < CSVRow
         super(row)
         @ledger_indent = ' '*4
         @ledger_transaction = @ledger_indent + '%-23s  %23s'
+        @ledger_tag = @ledger_indent + '; %s: %s'
     end
 end
 
@@ -48,6 +49,10 @@ end
 # helper functions
 def clean_date(text_date, date_format="%Y-%m-%d") # reformat date in to big endian format
     return Date.strptime(text_date,date_format).strftime("%Y-%m-%d")
+end
+
+def clean_date_time(text_date, date_format="%Y-%m-%d %H:%M:%S") # reformat date in to big endian format
+    return DateTime.strptime(text_date,date_format).strftime("%Y-%m-%d")
 end
 
 
@@ -113,13 +118,23 @@ end
 csv = CSV.open($csv_filename,'r', liberal_parsing: true)
 
 csv.each() do |row|
-    if(csv.lineno == 1) #this is the header row, store to assign as keys on later rows, stripping whitespace
-        $header_row = row.collect{|val| val.to_s.strip}
-    else
-        thisrow = LedgerFormatCSVRow.new(row)
-        #print "line: #{thisrow.csvrow.inspect}\n"
-        erbrender = ERB.new($erb_template, safe_mode=nil, trim_mode='-<>')
-        puts erbrender.result(thisrow.get_binding)
+    begin
+        if(csv.lineno == 1) #this is the header row, store to assign as keys on later rows, stripping whitespace
+            $header_row = row.collect{|val| val.to_s.strip}
+        else
+            thisrow = LedgerFormatCSVRow.new(row)
+            #print "line: #{thisrow.csvrow.inspect}\n"
+            erbrender = ERB.new($erb_template, safe_mode=nil, trim_mode='-<>')
+            puts erbrender.result(thisrow.get_binding)
+        end
+    rescue => e
+        STDERR.puts "'#{$template_file}'/'#{$csv_filename}':#{csv.lineno}"
+        STDERR.puts "\t#{$header_row}"
+        STDERR.puts "\t#{row}"
+        STDERR.puts "\t#{thisrow.get_binding().source_location}"
+        STDERR.puts "\t#{e}"
+        e.backtrace.each { |l| STDERR.puts "\t#{l}" }
+        raise e
     end
 end
 

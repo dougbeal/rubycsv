@@ -2,7 +2,6 @@
 <%# Date and transaction -%>
 <% @date_header = csvrow.first[0] -%>
 <% @date_format = "%m/%d/%Y" -%>
-<% @dollar_format = '     %-25s %10s' -%>
 <% @item = ['Type', 'Item Title', 'Name'] -%>
 <% @cust = ['Name', 'Customer ID'] -%>
 <% @type = csvrow['Type'] %>
@@ -13,19 +12,23 @@
 <% {'syncid' => 'Transaction ID',
 }.each do |name, column|
 %><% if csvrow[column]
-  %>     ; <%= "%s: %s" % [ name, csvrow[column] ] %>
+  %><%= @ledger_tag % [ name, csvrow[column] ] %>
 <% end -%><% end -%>
-<%# -%>
+<%# Withdrawal -%>
+<%#  -%>
 <% if @type.eql?("General Withdrawal")
 -%><% for @income in ['Net']
-   %><%= @dollar_format % ["Assets:Paypal", "$" + clean_money(csvrow[@income])] %>
+   -%><%= @ledger_transaction % ["Assets:Paypal", "$" + clean_money(csvrow[@income])] %>
+<% end -%>
+<%= @ledger_transaction % ["Transfer:Paypal", ""] %>
+<%# Income -%>
+<%#  -%>
+<% else
+-%><% for @income in ['Gross', 'Fee', 'Net']
+   -%><% @money = clean_money(csvrow[@income])
+      -%><% if not @money.empty? -%><%= @ledger_transaction % ["Assets:Paypal:" + @income + "", "$" + @money ] %>
+      <%- end -%>
 <% end -%>
 <%# -%>
-<%= @dollar_format % ["Transfer:Paypal", ""] %>
-<% else -%>
-<% for @income in ['Gross', 'Fee', 'Net']
-%><%= @dollar_format % ["Assets:Paypal:" + @income + "", "$" + clean_money(csvrow[@income])] %>
-<% end -%>
-<%# -%>
-<%= @dollar_format % ["Income:Paypal", ""] %>
+<%= @ledger_transaction % ["Income:Paypal", ""] %>
 <% end -%>

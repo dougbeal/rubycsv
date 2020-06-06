@@ -4,7 +4,9 @@
 <% @virtuals = ['Gross Sales', 'Discounts'] -%>
 <% @item = ['SKU', 'Item', 'Price Point Name'] -%>
 <% @cust = ['Customer Name', 'Customer ID'] -%>
-<%= clean_date(csvrow['Date'], "%m/%d/%y")
+<% @date_header = csvrow.first[0] -%>
+<% @date_format = "%m/%d/%y" -%>
+<%= clean_date(csvrow[@date_header], @date_format)
 %> Item <%= @item.map{ |c| csvrow[c] }.select{ |c| not c.strip.empty? }.join(', ') %> by <%= @cust.map{ |c| csvrow[c] }.join(', ') %> as <%= csvrow['Transaction ID']  %>
 <%# -%>
 <%# tags -%>
