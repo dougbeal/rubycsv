@@ -1,7 +1,6 @@
 <%# "balance_transaction_id","created_utc","created","available_on_utc","available_on","currency","gross","fee","net","reporting_category","source_id","description","customer_facing_amount","customer_facing_currency","automatic_payout_id","automatic_payout_effective_at_utc","automatic_payout_effective_at","customer_id","customer_email","customer_description","charge_id","payment_intent_id","charge_created_utc","charge_created","invoice_id","subscription_id","payment_method_type","card_brand","card_funding","card_country","connected_account_id","connected_account_name","connected_account_country" -%>
 
 <%# Date and transaction -%>
-<% @service = 'Stripe'  %>
 <% @tags = {
     "payout_id" => "payout_id",
     "balance_transaction_id" => "balance_transaction_id",
@@ -13,9 +12,9 @@
 <% @virtuals = {}
 -%>
 <% @line = {
-    'Income:' + @service + ':gross' => { :column => 'gross', :invert => true },
-    'Assets:Fees:' + @service => { :column => 'fee', :invert => false },
-    'Assets:' + @service + ':Sale' => { :column => 'net', :invert => false },
+    'Income:Gross' => { :column => 'gross', :invert => true },
+    'Expenses:Fee' => { :column => 'fee', :invert => false },
+    'Assets:Net' => { :column => 'net', :invert => false },
 } -%>
 
 <% @items = ['source_id', 'description'] -%>

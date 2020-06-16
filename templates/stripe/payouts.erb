@@ -5,16 +5,20 @@
     "payout_id" => "payout_id", 
     "balance_transaction_id" => "balance_transaction_id",
     "description" => "description",
-    "payout_destination_id" => "payout_destination_id"
+    "payout_destination_id" => "payout_destination_id",
+    "reporting_category" => "reporting_category",
+    "gross" => "gross",
+    "fee" => "fee",
+    "net" => "net",
 
 } -%>
 <% @line = {
-    'Assets:Stripe:Sale' => { :column => 'gross', :invert => true },
-    'Expenses:Fees:Stripe' => { :column => 'fee', :invert => true },
+    'Assets:Net' => { :column => 'gross', :invert => true },
+    'Expenses:Fees' => { :column => 'fee', :invert => true },
     'Transfer' => { :column => 'net', :invert => false },
 } -%>
 <%= clean_date_time(csvrow['effective_at'] )
-%> <%= "Stripe " + @transaction.map{ |c| csvrow[c] }.select{ |c| not c.strip.empty? }.join(', ') %> 
+%> <%= "Stripe Transfer " + @transaction.map{ |c| csvrow[c] }.select{ |c| not c.strip.empty? }.join(', ') %> 
 <%# tags -%>
 <% @tags.each do |name, column|
 %><% if csvrow[column]

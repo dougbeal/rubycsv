@@ -5,30 +5,48 @@
 <% @item = ['Type', 'Item Title', 'Name'] -%>
 <% @cust = ['Name', 'Customer ID'] -%>
 <% @type = csvrow['Type'] %>
+<% @tags = {
+    "transaction" => "Transaction ID",
+    "email_form" => "From Email Address",
+    "email_to" => "To Email Address",
+    "type" => "Type",
+    "Notes" => "Note"
+} -%>
+<% @income = {
+    'Income' => { :column => 'Gross', :invert => true },
+    'Assets:Net' => { :column => 'Net', :invert => false },
+    'Expenses:Fees' => { :column => 'Fee', :invert => true }
+} -%>
+<% @withdrawal = {
+    'Assets:Net' => { :column => 'Net', :invert => false },
+    'Expenses:Fees' => { :column => 'Fee', :invert => true },
+    'Transfer' => { :column => 'Gross', :invert => true }
+} -%>
 <%= clean_date(csvrow[@date_header], @date_format)
 %> <%= @item.map{ |c| csvrow[c] }.select{ |c| not c.strip.empty? }.join(', ') %> by <%= @cust.map{ |c| csvrow[c] }.join(', ') %> as <%= csvrow['Transaction ID']  %>
 <%# -%>
 <%# tags -%>
-<% {'syncid' => 'Transaction ID',
-}.each do |name, column|
-%><% if csvrow[column]
-  %><%= @ledger_tag % [ name, csvrow[column] ] %>
+<% @tags.each do |name, column|
+%><% if csvrow.key?(column) and not csvrow[column].empty?
+  %><%= @ledger_indent + "; %s: %s" % [ name, csvrow[column] ] %>
 <% end -%><% end -%>
 <%# Withdrawal -%>
 <%#  -%>
 <% if @type.eql?("General Withdrawal")
--%><% for @income in ['Net']
-   -%><%= @ledger_transaction % ["Assets:Paypal", "$" + clean_money(csvrow[@income])] %>
-<% end -%>
-<%= @ledger_transaction % ["Transfer:Paypal", ""] %>
+-%><% @withdrawal.each do |name, v|
+   %><% value = csvrow[v[:column]]
+     %><% if not value.empty? %><%=
+                                @ledger_transaction %
+                                [name,
+                                 "$" + clean_money(value,
+                                                   invert:v[:invert])
+                                ] %>
+<% end -%><% end -%>
 <%# Income -%>
 <%#  -%>
-<% else
--%><% for @income in ['Gross', 'Fee', 'Net']
-   -%><% @money = clean_money(csvrow[@income])
-      -%><% if not @money.empty? -%><%= @ledger_transaction % ["Assets:Paypal:" + @income + "", "$" + @money ] %>
-      <%- end -%>
+<% elsif not @type.eql?("Invoice Received")
+-%><% @income.each do |name, v|
+   %><%= @ledger_transaction % [name, "$" + clean_money(csvrow[v[:column]], invert:v[:invert])] %>
+<%- end -%>
 <% end -%>
 <%# -%>
-<%= @ledger_transaction % ["Income:Paypal", ""] %>
-<% end -%>

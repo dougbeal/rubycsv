@@ -55,7 +55,10 @@ def clean_date_time(text_date, date_format="%Y-%m-%d %H:%M:%S") # reformat date 
     return DateTime.strptime(text_date,date_format).strftime("%Y-%m-%d")
 end
 
-
+# clean money are return with $ for USD in ledger
+def clean_money_usd(text_money, positive: false, invert: false)
+    return "$" + clean_money(text_money, positive: positive, invert: invert)
+end
 
 def clean_money(text_money, positive: false, invert: false) # nuke all but digits, negation, decimal place
     if text_money.nil?

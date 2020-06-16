@@ -5,11 +5,14 @@
     'transaction' => 'Transaction ID',
     'payment' => 'Payment ID',
     'desposit' => 'Deposit ID',
-    'loc' => 'Location'
+    'loc' => 'Location',
+    'Collected' => 'Collected',
+    'Fees' => 'Fees',
+    'Deposited' => 'Deposited',        
 } -%>
 <% @line = {
-    'Assets:Square:Sale' => { :column => 'Collected', :invert => true },
-    'Expenses:Fees:Square' => { :column => 'Fees', :invert => true },
+    'Assets:Net' => { :column => 'Collected', :invert => true },
+    'Expenses:Fees' => { :column => 'Fees', :invert => true },
     'Transfer' => { :column => 'Deposited', :invert => false },
 } -%>
 <%= clean_date(csvrow['Deposit Date'], "%m/%d/%y")
